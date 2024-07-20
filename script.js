@@ -3,6 +3,8 @@ const PASSWORD = "sierra_7";
 let attempts = 0;
 const MAX_ATTEMPTS = 3;
 
+let users = {};
+
 window.onload = function() {
     generateCaptcha();
 };
@@ -18,47 +20,63 @@ function validateLogin() {
     const captchaInput = document.getElementById("captcha-input").value;
     const captcha = document.getElementById("captcha").innerText;
 
-    let valid = true;
-
-    // Clear previous errors
-    document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
-
-    if (!userId) {
-        document.getElementById("user-id-error").classList.remove('hidden');
-        valid = false;
-    }
-
-    if (!password) {
-        document.getElementById("password-error").classList.remove('hidden');
-        valid = false;
-    }
-
-    if (!captchaInput) {
-        document.getElementById("captcha-error").classList.remove('hidden');
-        valid = false;
-    }
-
-    if (!valid) return;
-
     if (userId === USER_ID && password === PASSWORD && captchaInput === captcha) {
         alert("Login successful!");
         openEditor();
     } else {
         attempts++;
         if (attempts >= MAX_ATTEMPTS) {
-            showVideo();
+            playVideo();
         } else {
             alert(`Login failed! Attempts left: ${MAX_ATTEMPTS - attempts}`);
+            resetForm();
             generateCaptcha();
         }
     }
 }
 
-function showVideo() {
-    document.getElementById("video-container").classList.add("show");
+function resetForm() {
+    document.getElementById("user-id").value = '';
+    document.getElementById("password").value = '';
+    document.getElementById("captcha-input").value = '';
+}
+
+function playVideo() {
+    document.getElementById("login-form").classList.add("hidden");
+    document.getElementById("video-container").classList.remove("hidden");
     document.getElementById("video").play();
 }
 
 function openEditor() {
-    alert("Editor opened!");
+    document.getElementById("login-form").classList.add("hidden");
+    document.getElementById("editor").classList.remove("hidden");
+}
+
+function showRegisterForm() {
+    document.getElementById("login-form").classList.add("hidden");
+    document.getElementById("register-form").classList.remove("hidden");
+}
+
+function hideRegisterForm() {
+    document.getElementById("register-form").classList.add("hidden");
+    document.getElementById("login-form").classList.remove("hidden");
+}
+
+function registerUser() {
+    const newUserId = document.getElementById("new-user-id").value;
+    const newPassword = document.getElementById("new-password").value;
+
+    if (users[newUserId]) {
+        alert("User ID already exists. Please choose a different User ID.");
+    } else {
+        users[newUserId] = newPassword;
+        alert("Registration successful! You can now log in.");
+        hideRegisterForm();
+    }
+}
+
+function saveNote() {
+    const note = document.getElementById("note").value;
+    // Implement the code to save the note to your GitHub repo
+    alert("Note saved!");
 }
