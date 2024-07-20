@@ -8,30 +8,35 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo-container">
-            <img src="logo.png" alt="ARHAN Securo Serve Logo" id="logo" class="animated-logo">
-        </div>
+        <img src="logo.png" alt="Logo" class="logo">
+        <h1>ARHAN Securo Serve</h1>
         <div id="login-form">
-            <h1>ARHAN Securo Serve</h1>
             <label for="user-id">User ID:</label>
-            <input type="text" id="user-id" placeholder="Enter User ID">
-            <div id="user-id-error" class="error-message hidden">Please enter your User ID.</div>
-            
+            <input type="text" id="user-id">
             <label for="password">Password:</label>
-            <input type="password" id="password" placeholder="Enter Password">
-            <div id="password-error" class="error-message hidden">Please enter your password.</div>
-            
+            <input type="password" id="password">
             <label for="captcha">Captcha: <span id="captcha"></span></label>
-            <input type="text" id="captcha-input" placeholder="Enter Captcha">
-            <div id="captcha-error" class="error-message hidden">Please enter the captcha.</div>
-            
+            <input type="text" id="captcha-input">
             <button onclick="validateLogin()">Login</button>
+            <p>Don't have an account? <a href="#" onclick="showRegisterForm()">Register here</a></p>
+        </div>
+        <div id="register-form" class="hidden">
+            <label for="new-user-id">New User ID:</label>
+            <input type="text" id="new-user-id">
+            <label for="new-password">New Password:</label>
+            <input type="password" id="new-password">
+            <button onclick="registerUser()">Register</button>
+            <button onclick="hideRegisterForm()">Cancel</button>
         </div>
         <div id="video-container" class="hidden">
             <video id="video" controls>
                 <source src="video.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
+        </div>
+        <div id="editor" class="hidden">
+            <textarea id="note" placeholder="Write your note here..."></textarea>
+            <button onclick="saveNote()">Save Note</button>
         </div>
     </div>
     <script src="script.js"></script>
