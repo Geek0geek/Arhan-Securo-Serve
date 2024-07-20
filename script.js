@@ -1,247 +1,104 @@
 const USER_ID = "admin";
 const PASSWORD = "sierra_7";
-const GITHUB_TOKEN = "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";
-const REPO_OWNER = "Geek0geek";
-const REPO_NAME = "Arhan-Securo-Serve";
-const NOTES_FILE_PATH = "notes.json";
-const USERS_FILE_PATH = "users.json";
 let attempts = 0;
 const MAX_ATTEMPTS = 3;
-
-let users = {};
-let notespaces = {};
+const notespaces = {}; // Will store notespaces in memory
 
 window.onload = function() {
     generateCaptcha();
     loadNotespaces();
     animateLogo();
-    loadUsers();
 };
 
-async function apiRequest(method, path, data = null) {
-    const response = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`, {
-        method: method,
-        headers: {
-            'Authorization': `token ${GITHUB_TOKEN}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
-        },
-        body: data ? JSON.stringify(data) : null
-    });
-    if (!response.ok) throw new Error(`GitHub API error: ${response.statusText}`);
-    return await response.json();
-}
-
-async function saveNote() {
-    const notespace = document.getElementById("note-space").value;
-    const noteContent = document.getElementById("note").value;
-
-    if (noteContent.trim() === '') {
-        alert("Note cannot be empty.");
-        return;
-    }
-
-    if (notespaces[notespace]) {
-        notespaces[notespace].push(noteContent);
-        try {
-            await apiRequest('PUT', NOTES_FILE_PATH, {
-                message: `Update notes in ${notespace}`,
-                content: btoa(JSON.stringify(notespaces)),
-                sha: await getFileSha(NOTES_FILE_PATH)
-            });
-            loadNotespaces();
-            document.getElementById("note").value = '';
-            alert("Note saved successfully.");
-        } catch (error) {
-            alert(`Error saving note: ${error.message}`);
-        }
-    } else {
-        alert("Please select or create a notespace first.");
-    }
-}
-
-async function getFileSha(path) {
-    try {
-        const response = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`, {
-            headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        const data = await response.json();
-        return data.sha;
-    } catch (error) {
-        console.error(`Error fetching file SHA: ${error.message}`);
-        return null;
-    }
-}
-
-async function saveUser(userId, password) {
-    if (users[userId]) {
-        alert("User ID already exists.");
-        return;
-    }
-
-    users[userId] = password;
-    try {
-        await apiRequest('PUT', USERS_FILE_PATH, {
-            message: 'Add new user',
-            content: btoa(JSON.stringify(users)),
-            sha: await getFileSha(USERS_FILE_PATH)
-        });
-        document.getElementById("register-form").classList.add("hidden");
-        document.getElementById("login-form").classList.remove("hidden");
-    } catch (error) {
-        alert(`Error saving user: ${error.message}`);
-    }
-}
-
-async function loadUsers() {
-    try {
-        const response = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${USERS_FILE_PATH}`, {
-            headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        const data = await response.json();
-        const content = atob(data.content);
-        users = JSON.parse(content);
-    } catch (error) {
-        console.error(`Error loading users: ${error.message}`);
-    }
-}
-
+// Function to validate login
 function validateLogin() {
-    const userId = document.getElementById("user-id").value;
-    const password = document.getElementById("password").value;
-    const captchaInput = document.getElementById("captcha-input").value;
-    const captcha = document.getElementById("captcha").innerText;
+    const userId = document.getElementById("user-id").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const captchaInput = document.getElementById("captcha-input").value.trim();
+    const captcha = document.getElementById("captcha").innerText.trim();
 
-    let valid = true;
+    clearErrors();
 
     if (!userId) {
-        document.getElementById("user-id-error").innerText = "Please enter your User ID.";
-        document.getElementById("user-id-error").style.display = "block";
-        valid = false;
-    } else {
-        document.getElementById("user-id-error").style.display = "none";
+        document.getElementById("user-id-error").innerText = "Please enter User ID.";
+        return;
     }
-
     if (!password) {
-        document.getElementById("password-error").innerText = "Please enter your password.";
-        document.getElementById("password-error").style.display = "block";
-        valid = false;
-    } else {
-        document.getElementById("password-error").style.display = "none";
+        document.getElementById("password-error").innerText = "Please enter Password.";
+        return;
     }
-
     if (!captchaInput) {
-        document.getElementById("captcha-error").innerText = "Please enter the captcha.";
-        document.getElementById("captcha-error").style.display = "block";
-        valid = false;
-    } else {
-        document.getElementById("captcha-error").style.display = "none";
+        document.getElementById("captcha-error").innerText = "Please enter Captcha.";
+        return;
     }
 
-    if (valid) {
-        if (users[userId] === password && captchaInput === captcha) {
-            openEditor();
+    if (userId === USER_ID && password === PASSWORD && captchaInput === captcha) {
+        alert("Login successful!");
+        document.getElementById("login-form").classList.add("hidden");
+        document.getElementById("editor").classList.remove("hidden");
+    } else {
+        attempts++;
+        if (attempts >= MAX_ATTEMPTS) {
+            playVideo();
         } else {
-            attempts++;
-            if (attempts >= MAX_ATTEMPTS) {
-                playVideo();
-            } else {
-                document.getElementById("captcha-error").innerText = "Invalid credentials or captcha.";
-                document.getElementById("captcha-error").style.display = "block";
-                generateCaptcha();
-            }
+            alert(`Login failed! Attempts left: ${MAX_ATTEMPTS - attempts}`);
+            generateCaptcha();
         }
     }
 }
 
-function resetForm() {
-    document.getElementById("user-id").value = '';
-    document.getElementById("password").value = '';
-    document.getElementById("captcha-input").value = '';
-}
-
+// Function to play video after failed login attempts
 function playVideo() {
     document.getElementById("login-form").classList.add("hidden");
     document.getElementById("video-container").classList.remove("hidden");
     document.getElementById("video").play();
 }
 
-function openEditor() {
-    document.getElementById("login-form").classList.add("hidden");
-    document.getElementById("editor").classList.remove("hidden");
+// Function to generate a new captcha
+function generateCaptcha() {
+    const captcha = Math.floor(Math.random() * 9000) + 1000;
+    document.getElementById("captcha").innerText = captcha;
 }
 
+// Function to show the registration form
 function showRegisterForm() {
     document.getElementById("login-form").classList.add("hidden");
     document.getElementById("register-form").classList.remove("hidden");
 }
 
+// Function to hide the registration form
 function hideRegisterForm() {
     document.getElementById("register-form").classList.add("hidden");
     document.getElementById("login-form").classList.remove("hidden");
 }
 
+// Function to register a new user
 function registerUser() {
-    const newUserId = document.getElementById("new-user-id").value;
-    const newPassword = document.getElementById("new-password").value;
+    const newUserId = document.getElementById("new-user-id").value.trim();
+    const newPassword = document.getElementById("new-password").value.trim();
 
-    let valid = true;
+    clearErrors();
 
     if (!newUserId) {
-        document.getElementById("new-user-id-error").innerText = "Please enter a User ID.";
-        document.getElementById("new-user-id-error").style.display = "block";
-        valid = false;
-    } else {
-        document.getElementById("new-user-id-error").style.display = "none";
+        document.getElementById("new-user-id-error").innerText = "Please enter User ID.";
+        return;
     }
-
     if (!newPassword) {
-        document.getElementById("new-password-error").innerText = "Please enter a password.";
-        document.getElementById("new-password-error").style.display = "block";
-        valid = false;
-    } else {
-        document.getElementById("new-password-error").style.display = "none";
-    }
-
-    if (valid) {
-        saveUser(newUserId, newPassword);
-    }
-}
-
-function saveNote() {
-    const notespace = document.getElementById("note-space").value;
-    const noteContent = document.getElementById("note").value;
-
-    if (noteContent.trim() === '') {
-        alert("Note cannot be empty.");
+        document.getElementById("new-password-error").innerText = "Please enter Password.";
         return;
     }
 
-    if (notespaces[notespace]) {
-        notespaces[notespace].push(noteContent);
-        try {
-            apiRequest('PUT', NOTES_FILE_PATH, {
-                message: `Update notes in ${notespace}`,
-                content: btoa(JSON.stringify(notespaces)),
-                sha: await getFileSha(NOTES_FILE_PATH)
-            });
-            loadNotespaces();
-            document.getElementById("note").value = '';
-            alert("Note saved successfully.");
-        } catch (error) {
-            alert(`Error saving note: ${error.message}`);
-        }
-    } else {
-        alert("Please select or create a notespace first.");
-    }
+    saveUser(newUserId, newPassword);
 }
 
+// Function to clear all error messages
+function clearErrors() {
+    document.querySelectorAll('.error-message').forEach(element => {
+        element.innerText = '';
+    });
+}
+
+// Function to load existing notespaces into the select dropdown
 function loadNotespaces() {
     const notespaceSelect = document.getElementById("note-space");
     notespaceSelect.innerHTML = '<option value="" disabled selected>Select notespace</option>';
@@ -249,34 +106,54 @@ function loadNotespaces() {
     for (let name in notespaces) {
         const option = document.createElement("option");
         option.value = name;
-        option.textContent = name;
-        notespaceSelect.appendChild(option);
+        option.text = name;
+        notespaceSelect.add(option);
     }
 }
 
+// Function to create a new notespace
 function createNotespace() {
-    const notespace = prompt("Enter name for new notespace:");
-    if (notespace && !notespaces[notespace]) {
-        notespaces[notespace] = [];
+    const notespaceName = prompt("Enter new notespace name:");
+    if (notespaceName) {
+        notespaces[notespaceName] = [];
         loadNotespaces();
-    } else if (notespaces[notespace]) {
-        alert("Notespace already exists.");
     }
 }
 
+// Function to load notes from the selected notespace
 function loadNotespace() {
-    const notespace = document.getElementById("note-space").value;
-    if (notespaces[notespace]) {
-        document.getElementById("note").value = notespaces[notespace].join('\n\n');
-    } else {
-        document.getElementById("note").value = '';
+    const notespaceName = document.getElementById("note-space").value;
+    if (notespaceName) {
+        document.getElementById("note").value = notespaces[notespaceName].join('\n');
     }
 }
 
+// Function to save a note to the selected notespace
+function saveNote() {
+    const notespaceName = document.getElementById("note-space").value;
+    const noteContent = document.getElementById("note").value;
+
+    if (notespaceName && noteContent) {
+        notespaces[notespaceName] = noteContent.split('\n');
+        saveNotesToGitHub(notespaceName, notespaces[notespaceName]);
+    } else {
+        alert("Please select a notespace and enter note content.");
+    }
+}
+
+// Function to save user registration data
+function saveUser(userId, password) {
+    // Placeholder for actual GitHub API call to save user data
+    console.log(`Saving user ${userId} with password ${password}`);
+}
+
+// Function to save notes to GitHub
+function saveNotesToGitHub(notespaceName, notes) {
+    // Placeholder for actual GitHub API call to save notes data
+    console.log(`Saving notes for notespace ${notespaceName}: ${notes}`);
+}
+
+// Function to animate the logo on page load
 function animateLogo() {
-    const logo = document.getElementById("logo");
-    logo.classList.add("animated-logo");
-    setTimeout(() => {
-        logo.classList.remove("animated-logo");
-    }, 2000);
+    document.getElementById("logo").classList.add("animated-logo");
 }
