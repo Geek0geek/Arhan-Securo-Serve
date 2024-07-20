@@ -3,57 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARHAN Securo Serve</title>
+    <title>ARHAN Securo Serve Login</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <div class="logo-container">
-            <img id="logo" src="logo.png" alt="Logo" class="animated-logo">
+            <img src="logo.png" alt="ARHAN Securo Serve Logo" id="logo" class="animated-logo">
         </div>
         <div id="login-form">
-            <h1>Login</h1>
+            <h1>ARHAN Securo Serve</h1>
             <label for="user-id">User ID:</label>
-            <input type="text" id="user-id">
-            <div id="user-id-error" class="error-message"></div>
+            <input type="text" id="user-id" placeholder="Enter User ID">
+            <div id="user-id-error" class="error-message hidden">Please enter your User ID.</div>
             
             <label for="password">Password:</label>
-            <input type="password" id="password">
-            <div id="password-error" class="error-message"></div>
+            <input type="password" id="password" placeholder="Enter Password">
+            <div id="password-error" class="error-message hidden">Please enter your password.</div>
             
             <label for="captcha">Captcha: <span id="captcha"></span></label>
-            <input type="text" id="captcha-input">
-            <div id="captcha-error" class="error-message"></div>
+            <input type="text" id="captcha-input" placeholder="Enter Captcha">
+            <div id="captcha-error" class="error-message hidden">Please enter the captcha.</div>
             
             <button onclick="validateLogin()">Login</button>
-            <button onclick="showRegisterForm()">Register</button>
         </div>
-
-        <div id="register-form" class="hidden">
-            <h1>Register</h1>
-            <label for="new-user-id">User ID:</label>
-            <input type="text" id="new-user-id">
-            <div id="new-user-id-error" class="error-message"></div>
-            
-            <label for="new-password">Password:</label>
-            <input type="password" id="new-password">
-            <div id="new-password-error" class="error-message"></div>
-            
-            <button onclick="registerUser()">Register</button>
-            <button onclick="hideRegisterForm()">Back to Login</button>
-        </div>
-
-        <div id="editor" class="hidden">
-            <h1>Notes Editor</h1>
-            <label for="note-space">Select or Create Notespace:</label>
-            <select id="note-space" onchange="loadNotespace()">
-                <option value="" disabled selected>Select notespace</option>
-            </select>
-            <button onclick="createNotespace()">Create New Notespace</button>
-            <textarea id="note" rows="10" cols="30"></textarea>
-            <button onclick="saveNote()">Save Note</button>
-        </div>
-
         <div id="video-container" class="hidden">
             <video id="video" controls>
                 <source src="video.mp4" type="video/mp4">
